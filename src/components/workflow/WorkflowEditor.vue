@@ -42,14 +42,14 @@ onConnect((params) => {
     target: params.target,
     type: 'transition',
     markerEnd: MarkerType.ArrowClosed,
-    data: { name: 'New Transition' },
+    data: { name: 'New Transition', assignedTo: '' },
   }
   addEdges([newEdge])
   workflowStore.addEdge({
     id: newEdge.id,
     source: params.source,
     target: params.target,
-    data: { name: 'New Transition' },
+    data: { name: 'New Transition', assignedTo: '' },
   })
 })
 
@@ -112,8 +112,8 @@ function handleUpdateNodeData(nodeId: string, data: { name?: string; stateType?:
   console.log('[WorkflowEditor] nodes after update:', JSON.parse(JSON.stringify(workflowStore.nodes)))
 }
 
-function handleUpdateTransitionLabel(edgeId: string, name: string) {
-  workflowStore.updateEdgeData(edgeId, { name })
+function handleUpdateTransitionLabel(edgeId: string, name: string, assignedTo: string) {
+  workflowStore.updateEdgeData(edgeId, { name, assignedTo })
 }
 
 function handleDeleteTransition(edgeId: string) {

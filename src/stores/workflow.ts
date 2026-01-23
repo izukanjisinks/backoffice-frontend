@@ -20,6 +20,7 @@ export interface Transition {
   target: string
   data: {
     name: string
+    assignedTo: string
   }
 }
 
@@ -47,24 +48,24 @@ export const useWorkflowStore = defineStore('workflow', () => {
           id: '1',
           type: 'state',
           position: { x: 250, y: 0 },
-          data: { name: 'New Company', stateType: 'initial', displayOrder: 1 },
+          data: { name: 'Application Submittion', stateType: 'initial', displayOrder: 1 },
         },
         {
           id: '2',
           type: 'state',
-          position: { x: 250, y: 120 },
-          data: { name: 'Documents Pending', stateType: 'middle', displayOrder: 2 },
+          position: { x: 250, y: 200 },
+          data: { name: 'Application Review', stateType: 'middle', displayOrder: 2 },
         },
         {
           id: '3',
           type: 'state',
-          position: { x: 250, y: 240 },
-          data: { name: 'Under Review', stateType: 'middle', displayOrder: 3 },
+          position: { x: 250, y: 300 },
+          data: { name: 'Application Approval ', stateType: 'middle', displayOrder: 3 },
         }
       ],
       edges: [
-        { id: 'e1-2', source: '1', target: '2', data: { name: 'Submit Application' } },
-        { id: 'e2-3', source: '2', target: '3', data: { name: 'Documents Received' } }
+        { id: 'e1-2', source: '1', target: '2', data: { name: 'Review Application', assignedTo: 'Admin' } },
+        { id: 'e2-3', source: '2', target: '3', data: { name: 'Approve Application', assignedTo: 'Manager' } }
       ],
       createdAt: '2024-01-15T10:00:00Z',
       updatedAt: '2024-01-15T10:00:00Z',
@@ -89,7 +90,7 @@ export const useWorkflowStore = defineStore('workflow', () => {
         }
       ],
       edges: [
-        { id: 'e1-2', source: '1', target: '2', data: { name: 'Approve' } }
+        { id: 'e1-2', source: '1', target: '2', data: { name: 'Approve', assignedTo: 'Admin' } }
       ],
       createdAt: '2024-01-20T14:30:00Z',
       updatedAt: '2024-01-20T14:30:00Z',
