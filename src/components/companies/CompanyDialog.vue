@@ -185,6 +185,21 @@ function handleClose(value: boolean) {
     stepIndex.value = 1
   }
 }
+
+async function handleNextStep(validateField: (field: string) => Promise<{ valid: boolean }>, nextStep: () => void) {
+  const currentStepFields = stepFields[stepIndex.value - 1]
+  const results = await Promise.all(currentStepFields.map(field => validateField(field)))
+  const isStepValid = results.every(result => result.valid)
+  if (isStepValid) {
+    nextStep()
+  }
+}
+
+function handleFormSubmit(meta: { valid: boolean }, values: unknown) {
+  if (stepIndex.value === steps.length && meta.valid) {
+    onSubmit(values as unknown as CompanyFormValues)
+  }
+}
 </script>
 
 <template>
@@ -199,24 +214,21 @@ function handleClose(value: boolean) {
 
       <Form
         :key="formKey"
-        v-slot="{ meta, values, validate }"
+        v-slot="{ meta, values, validateField }"
         as=""
         keep-values
         :validation-schema="formValidationSchema"
         :initial-values="initialValues"
       >
         <Stepper
-          v-slot="{ isNextDisabled, isPrevDisabled, nextStep, prevStep }"
+          v-slot="{ isPrevDisabled, nextStep, prevStep }"
           v-model="stepIndex"
           class="block w-full"
         >
           <form
             @submit="(e) => {
               e.preventDefault()
-              validate()
-              if (stepIndex === steps.length && meta.valid) {
-                onSubmit(values as CompanyFormValues)
-              }
+              handleFormSubmit(meta, values)
             }"
           >
             <!-- Stepper Header -->
@@ -527,9 +539,8 @@ function handleClose(value: boolean) {
               <div class="flex items-center gap-3">
                 <Button
                   v-if="stepIndex !== steps.length"
-                  :type="meta.valid ? 'button' : 'submit'"
-                  :disabled="isNextDisabled"
-                  @click="meta.valid && nextStep()"
+                  type="button"
+                  @click="handleNextStep(validateField, nextStep)"
                 >
                   Next
                 </Button>
