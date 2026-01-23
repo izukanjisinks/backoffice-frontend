@@ -1,29 +1,26 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { useUiStore } from '../stores/ui.store'
-import { cn } from '../lib/utils'
+import { SidebarProvider, SidebarInset } from '../components/ui/sidebar'
 import AppSidebar from '../components/layout/AppSidebar.vue'
-import AppHeader from '../components/layout/AppHeader.vue'
-
-const uiStore = useUiStore()
-const { sidebarCollapsed } = storeToRefs(uiStore)
+import SiteHeader from '../components/layout/SiteHeader.vue'
 </script>
 
 <template>
-  <div class="min-h-screen bg-background">
-    <AppSidebar />
-
-    <div
-      :class="cn(
-        'flex flex-col transition-all duration-300',
-        sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
-      )"
-    >
-      <AppHeader />
-
-      <main class="flex-1 p-4 sm:p-6">
-        <slot />
-      </main>
-    </div>
-  </div>
+  <SidebarProvider
+    :style="{
+      '--sidebar-width': 'calc(var(--spacing) * 72)',
+      '--header-height': 'calc(var(--spacing) * 12)',
+    }"
+  >
+    <AppSidebar variant="inset" />
+    <SidebarInset>
+      <SiteHeader />
+      <div class="flex flex-1 flex-col">
+        <div class="@container/main flex flex-1 flex-col gap-2">
+          <div class="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
+            <slot />
+          </div>
+        </div>
+      </div>
+    </SidebarInset>
+  </SidebarProvider>
 </template>

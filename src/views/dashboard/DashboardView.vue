@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import StatCard from '../../components/dashboard/StatCard.vue'
-import RecentActivity from '../../components/dashboard/RecentActivity.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
+import CompanyGrowthChart from '../../components/dashboard/CompanyGrowthChart.vue'
+import SubscriptionPieChart from '../../components/dashboard/SubscriptionPieChart.vue'
+import WorkflowBarChart from '../../components/dashboard/WorkflowBarChart.vue'
 import { Building2, Users, FileCheck, AlertCircle } from 'lucide-vue-next'
 </script>
 
@@ -45,64 +46,18 @@ import { Building2, Users, FileCheck, AlertCircle } from 'lucide-vue-next'
 
     <!-- Main Content Grid -->
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-      <!-- Overview Card -->
-      <Card class="col-span-4">
-        <CardHeader>
-          <CardTitle>Company Growth</CardTitle>
-          <CardDescription>Number of companies onboarded over time</CardDescription>
-        </CardHeader>
-        <CardContent class="h-[300px] flex items-center justify-center text-muted-foreground">
-          Chart placeholder - integrate with @unovis/vue
-        </CardContent>
-      </Card>
+      <!-- Subscription Pie Chart -->
+      <div class="col-span-4">
+        <SubscriptionPieChart />
+      </div>
 
-      <!-- Subscription Distribution -->
-      <Card class="col-span-3">
-        <CardHeader>
-          <CardTitle>Subscription Distribution</CardTitle>
-          <CardDescription>Companies by subscription tier</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div class="space-y-4">
-            <div class="flex items-center">
-              <div class="w-full">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm font-medium">Enterprise</span>
-                  <span class="text-sm text-muted-foreground">45%</span>
-                </div>
-                <div class="h-2 w-full rounded-full bg-muted">
-                  <div class="h-2 rounded-full bg-primary" style="width: 45%"></div>
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center">
-              <div class="w-full">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm font-medium">Professional</span>
-                  <span class="text-sm text-muted-foreground">35%</span>
-                </div>
-                <div class="h-2 w-full rounded-full bg-muted">
-                  <div class="h-2 rounded-full bg-blue-500" style="width: 35%"></div>
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center">
-              <div class="w-full">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm font-medium">Starter</span>
-                  <span class="text-sm text-muted-foreground">20%</span>
-                </div>
-                <div class="h-2 w-full rounded-full bg-muted">
-                  <div class="h-2 rounded-full bg-green-500" style="width: 20%"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <!-- Workflow Bar Chart -->
+      <div class="col-span-3">
+        <WorkflowBarChart />
+      </div>
     </div>
 
-    <!-- Recent Activity -->
-    <RecentActivity />
+    <!-- Growth Chart -->
+    <CompanyGrowthChart />
   </div>
 </template>

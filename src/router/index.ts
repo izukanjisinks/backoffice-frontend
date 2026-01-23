@@ -34,7 +34,7 @@ const router = createRouter({
     {
       path: '/companies',
       name: 'companies',
-      component: () => import('../views/dashboard/DashboardView.vue'), // Placeholder
+      component: () => import('../views/companies/CompaniesView.vue'),
       meta: { title: 'Companies' },
     },
     {

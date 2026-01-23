@@ -1,11 +1,27 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import { useUiStore } from '../../stores/ui.store'
-import { cn } from '../../lib/utils'
-import { Button } from '../ui/button'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '../ui/sidebar'
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu'
 import {
   LayoutDashboard,
   CreditCard,
@@ -13,22 +29,32 @@ import {
   FileInput,
   Building2,
   Mail,
-  PanelLeftClose,
-  PanelLeft
+  LogOut,
+  Settings,
+  User,
+  ChevronsUpDown,
 } from 'lucide-vue-next'
 
-const route = useRoute()
-const uiStore = useUiStore()
+defineProps<{
+  variant?: 'sidebar' | 'floating' | 'inset'
+}>()
 
-const { sidebarCollapsed, sidebarMobileOpen } = storeToRefs(uiStore)
-const { toggleSidebar, closeMobileSidebar } = uiStore
+const route = useRoute()
+
+// Mock user data - replace with actual auth store later
+const currentUser = {
+  name: 'Admin User',
+  email: 'admin@example.com',
+  avatar: '',
+  initials: 'AU',
+}
 
 const navigationItems = computed(() => [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/companies', label: 'Companies', icon: Building2 },
   { path: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { path: '/workflows', label: 'Workflows', icon: GitBranch },
   { path: '/onboarding', label: 'Onboarding Requests', icon: FileInput },
-  { path: '/companies', label: 'Companies', icon: Building2 },
   { path: '/smtp', label: 'SMTP Settings', icon: Mail },
 ])
 
@@ -38,72 +64,106 @@ function isActive(path: string): boolean {
 </script>
 
 <template>
-  <aside
-    :class="cn(
-      'fixed inset-y-0 left-0 z-50 flex flex-col border-r bg-card transition-all duration-300',
-      sidebarCollapsed ? 'w-16' : 'w-64',
-      sidebarMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-    )"
-  >
-    <!-- Logo -->
-    <div class="flex h-16 items-center border-b px-4">
-      <div class="flex items-center gap-2">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <Building2 class="h-5 w-5 text-primary-foreground" />
-        </div>
-        <span v-if="!sidebarCollapsed" class="text-lg font-semibold">Backoffice</span>
-      </div>
-    </div>
+  <Sidebar :variant="variant" collapsible="icon">
+    <!-- Header with Logo -->
+    <SidebarHeader>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" as-child>
+            <RouterLink to="/dashboard">
+              <div class="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <Building2 class="size-4" />
+              </div>
+              <div class="grid flex-1 text-left text-sm leading-tight">
+                <span class="truncate font-semibold">Backoffice</span>
+                <span class="truncate text-xs text-muted-foreground">Admin Panel</span>
+              </div>
+            </RouterLink>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarHeader>
 
-    <!-- Navigation -->
-    <nav class="flex-1 space-y-1 p-2">
-      <TooltipProvider :delay-duration="0">
-        <template v-for="item in navigationItems" :key="item.path">
-          <Tooltip v-if="sidebarCollapsed">
-            <TooltipTrigger as-child>
-              <RouterLink
-                :to="item.path"
-                :class="cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted justify-center',
-                  isActive(item.path) && 'bg-muted text-primary font-medium'
-                )"
-                @click="closeMobileSidebar"
+    <!-- Navigation Content -->
+    <SidebarContent>
+      <SidebarGroup>
+        <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            <SidebarMenuItem v-for="item in navigationItems" :key="item.path">
+              <SidebarMenuButton
+                as-child
+                :tooltip="item.label"
+                :data-active="isActive(item.path)"
               >
-                <component :is="item.icon" class="h-5 w-5" />
-              </RouterLink>
-            </TooltipTrigger>
-            <TooltipContent side="right">{{ item.label }}</TooltipContent>
-          </Tooltip>
+                <RouterLink :to="item.path">
+                  <component :is="item.icon" />
+                  <span>{{ item.label }}</span>
+                </RouterLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </SidebarContent>
 
-          <RouterLink
-            v-else
-            :to="item.path"
-            :class="cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted',
-              isActive(item.path) && 'bg-muted text-primary font-medium'
-            )"
-            @click="closeMobileSidebar"
-          >
-            <component :is="item.icon" class="h-5 w-5" />
-            <span>{{ item.label }}</span>
-          </RouterLink>
-        </template>
-      </TooltipProvider>
-    </nav>
-
-    <!-- Footer -->
-    <div class="border-t p-2">
-      <Button variant="ghost" size="icon" class="w-full" @click="toggleSidebar">
-        <PanelLeftClose v-if="!sidebarCollapsed" class="h-5 w-5" />
-        <PanelLeft v-else class="h-5 w-5" />
-      </Button>
-    </div>
-  </aside>
-
-  <!-- Mobile Overlay -->
-  <div
-    v-if="sidebarMobileOpen"
-    class="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
-    @click="closeMobileSidebar"
-  />
+    <!-- Footer with User Profile -->
+    <SidebarFooter>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <SidebarMenuButton
+                size="lg"
+                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              >
+                <Avatar class="h-8 w-8 rounded-lg">
+                  <AvatarImage :src="currentUser.avatar" :alt="currentUser.name" />
+                  <AvatarFallback class="rounded-lg">{{ currentUser.initials }}</AvatarFallback>
+                </Avatar>
+                <div class="grid flex-1 text-left text-sm leading-tight">
+                  <span class="truncate font-semibold">{{ currentUser.name }}</span>
+                  <span class="truncate text-xs">{{ currentUser.email }}</span>
+                </div>
+                <ChevronsUpDown class="ml-auto size-4" />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              class="w-[--reka-popper-anchor-width] min-w-56 rounded-lg"
+              side="bottom"
+              align="end"
+              :side-offset="4"
+            >
+              <DropdownMenuLabel class="p-0 font-normal">
+                <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                  <Avatar class="h-8 w-8 rounded-lg">
+                    <AvatarImage :src="currentUser.avatar" :alt="currentUser.name" />
+                    <AvatarFallback class="rounded-lg">{{ currentUser.initials }}</AvatarFallback>
+                  </Avatar>
+                  <div class="grid flex-1 text-left text-sm leading-tight">
+                    <span class="truncate font-semibold">{{ currentUser.name }}</span>
+                    <span class="truncate text-xs">{{ currentUser.email }}</span>
+                  </div>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <User class="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings class="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem class="text-destructive focus:text-destructive">
+                <LogOut class="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarFooter>
+  </Sidebar>
 </template>
