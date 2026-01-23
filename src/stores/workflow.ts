@@ -43,26 +43,12 @@ export const useWorkflowStore = defineStore('workflow', () => {
       type: 'state',
       position: { x: 250, y: 240 },
       data: { name: 'Under Review', stateType: 'middle', displayOrder: 3 },
-    },
-    {
-      id: '4',
-      type: 'state',
-      position: { x: 100, y: 360 },
-      data: { name: 'Rejected', stateType: 'final', displayOrder: 4 },
-    },
-    {
-      id: '5',
-      type: 'state',
-      position: { x: 400, y: 360 },
-      data: { name: 'Approved', stateType: 'final', displayOrder: 5 },
-    },
+    }
   ])
 
   const edges = ref<Transition[]>([
     { id: 'e1-2', source: '1', target: '2', data: { name: 'Submit Application' } },
-    { id: 'e2-3', source: '2', target: '3', data: { name: 'Documents Received' } },
-    { id: 'e3-4', source: '3', target: '4', data: { name: 'Decline' } },
-    { id: 'e3-5', source: '3', target: '5', data: { name: 'Approve' } },
+    { id: 'e2-3', source: '2', target: '3', data: { name: 'Documents Received' } }
   ])
 
   const workflowName = ref('Company Onboarding Workflow')

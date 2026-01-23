@@ -116,6 +116,10 @@ function handleUpdateTransitionLabel(edgeId: string, name: string) {
   workflowStore.updateEdgeData(edgeId, { name })
 }
 
+function handleDeleteTransition(edgeId: string) {
+  workflowStore.removeEdge(edgeId)
+}
+
 // Add marker end to edges for display
 const edgesWithMarkers = computed(() =>
   workflowStore.edges.map(edge => ({
@@ -162,6 +166,7 @@ const edgesWithMarkers = computed(() =>
           <TransitionEdge
             v-bind="props"
             @update-label="handleUpdateTransitionLabel"
+            @delete="handleDeleteTransition"
           />
         </template>
 

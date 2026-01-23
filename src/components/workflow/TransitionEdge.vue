@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { BaseEdge, EdgeLabelRenderer, getBezierPath } from '@vue-flow/core'
+import { X } from 'lucide-vue-next'
 
 const props = defineProps<{
   id: string
@@ -18,6 +19,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   updateLabel: [edgeId: string, name: string]
+  delete: [edgeId: string]
 }>()
 
 const isEditing = ref(false)
@@ -71,10 +73,20 @@ function handleKeydown(event: KeyboardEvent) {
       <!-- View Mode -->
       <div
         v-if="!isEditing"
-        class="px-2 py-1 rounded bg-slate-700 text-white text-xs font-medium cursor-pointer hover:bg-slate-600 shadow-md"
-        @click="startEditing"
+        class="group flex items-center gap-1"
       >
-        {{ data?.name || 'Unnamed' }}
+        <div
+          class="px-2 py-1 rounded bg-slate-700 text-white text-xs font-medium cursor-pointer hover:bg-slate-600 shadow-md"
+          @click="startEditing"
+        >
+          {{ data?.name || 'Unnamed' }}
+        </div>
+        <button
+          class="w-4 h-4 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+          @click.stop="emit('delete', id)"
+        >
+          <X class="w-2.5 h-2.5" />
+        </button>
       </div>
 
       <!-- Edit Mode -->

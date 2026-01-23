@@ -23,14 +23,14 @@ const editName = ref(props.data.name)
 const editStateType = ref(props.data.stateType)
 const editDisplayOrder = ref(props.data.displayOrder)
 
-const stateTypeColor = computed(() => {
+const stateTypeBorder = computed(() => {
   switch (props.data.stateType) {
     case 'initial':
-      return 'bg-emerald-500 border-emerald-600'
+      return 'border-emerald-400 dark:border-emerald-500'
     case 'final':
-      return 'bg-red-500 border-red-600'
+      return 'border-red-400 dark:border-red-500'
     default:
-      return 'bg-blue-500 border-blue-600'
+      return 'border-blue-400 dark:border-blue-500'
   }
 })
 
@@ -71,8 +71,8 @@ function cancelEditing() {
 
 <template>
   <div
-    :class="[stateTypeColor]"
-    class="group relative px-4 py-3 shadow-md rounded-lg border-2 min-w-[200px]"
+    :class="[stateTypeBorder]"
+    class="group relative px-4 py-3 shadow-md rounded-lg border-2 min-w-[200px] bg-white dark:bg-slate-800"
   >
     <!-- Delete button -->
     <button
@@ -96,16 +96,16 @@ function cancelEditing() {
       v-if="data.stateType !== 'initial'"
       type="target"
       :position="Position.Top"
-      class="w-3 h-3 !bg-slate-700"
+      class="w-3 h-3 !bg-slate-500"
     />
 
     <!-- View Mode -->
     <div v-if="!isEditing" class="flex items-center gap-2">
-      <div class="rounded-full w-8 h-8 flex items-center justify-center bg-white/20">
-        <Circle class="w-4 h-4 text-white" />
+      <div class="rounded-full w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-700">
+        <Circle class="w-4 h-4 text-slate-600 dark:text-slate-300" />
       </div>
-      <div class="text-white">
-        <div class="text-xs font-medium uppercase tracking-wide opacity-80">
+      <div class="text-slate-800 dark:text-slate-200">
+        <div class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
           {{ stateTypeLabel }} State (#{{ data.displayOrder }})
         </div>
         <div class="text-sm font-semibold">{{ data.name }}</div>
@@ -115,44 +115,44 @@ function cancelEditing() {
     <!-- Edit Mode -->
     <div v-else class="space-y-2" @click.stop>
       <div>
-        <label class="text-xs text-white/80 block mb-1">Name</label>
+        <label class="text-xs text-slate-600 dark:text-slate-400 block mb-1">Name</label>
         <input
           v-model="editName"
           type="text"
-          class="w-full px-2 py-1 text-sm rounded bg-white/20 text-white border border-white/30 focus:outline-none focus:border-white"
+          class="w-full px-2 py-1 text-sm rounded bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-500 focus:outline-none focus:border-slate-500"
         />
       </div>
       <div class="grid grid-cols-2 gap-2">
         <div>
-          <label class="text-xs text-white/80 block mb-1">Type</label>
+          <label class="text-xs text-slate-600 dark:text-slate-400 block mb-1">Type</label>
           <select
             v-model="editStateType"
-            class="w-full px-2 py-1 text-sm rounded bg-white/20 text-white border border-white/30 focus:outline-none focus:border-white"
+            class="w-full px-2 py-1 text-sm rounded bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-500 focus:outline-none focus:border-slate-500"
           >
-            <option value="initial" class="text-slate-900">Initial</option>
-            <option value="middle" class="text-slate-900">Middle</option>
-            <option value="final" class="text-slate-900">Final</option>
+            <option value="initial">Initial</option>
+            <option value="middle">Middle</option>
+            <option value="final">Final</option>
           </select>
         </div>
         <div>
-          <label class="text-xs text-white/80 block mb-1">Order</label>
+          <label class="text-xs text-slate-600 dark:text-slate-400 block mb-1">Order</label>
           <input
             v-model.number="editDisplayOrder"
             type="number"
             min="1"
-            class="w-full px-2 py-1 text-sm rounded bg-white/20 text-white border border-white/30 focus:outline-none focus:border-white"
+            class="w-full px-2 py-1 text-sm rounded bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-500 focus:outline-none focus:border-slate-500"
           />
         </div>
       </div>
       <div class="flex gap-2 pt-1">
         <button
-          class="flex-1 px-2 py-1 text-xs rounded bg-white/20 hover:bg-white/30 text-white flex items-center justify-center gap-1"
+          class="flex-1 px-2 py-1 text-xs rounded bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 text-slate-700 dark:text-white flex items-center justify-center gap-1"
           @click.stop="cancelEditing"
         >
           Cancel
         </button>
         <button
-          class="flex-1 px-2 py-1 text-xs rounded bg-white text-slate-900 hover:bg-white/90 flex items-center justify-center gap-1"
+          class="flex-1 px-2 py-1 text-xs rounded bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 flex items-center justify-center gap-1"
           @click.stop="saveEditing"
         >
           <Check class="w-3 h-3" />
@@ -166,7 +166,7 @@ function cancelEditing() {
       v-if="data.stateType !== 'final'"
       type="source"
       :position="Position.Bottom"
-      class="w-3 h-3 !bg-slate-700"
+      class="w-3 h-3 !bg-slate-500"
     />
   </div>
 </template>
