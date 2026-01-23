@@ -26,6 +26,12 @@ const router = createRouter({
       meta: { title: 'Workflows' },
     },
     {
+      path: '/workflows/:id',
+      name: 'workflow-detail',
+      component: () => import('../views/workflows/WorkflowDetailView.vue'),
+      meta: { title: 'Edit Workflow' },
+    },
+    {
       path: '/onboarding',
       name: 'onboarding',
       component: () => import('../views/dashboard/DashboardView.vue'), // Placeholder
