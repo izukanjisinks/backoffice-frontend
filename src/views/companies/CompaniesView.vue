@@ -7,49 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from '../../components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/table'
-import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../components/ui/select'
-import {
-  Building2,
-  Plus,
-  MoreHorizontal,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  MoreHorizontal as Ellipsis,
-} from 'lucide-vue-next'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../../components/ui/dropdown-menu'
+import { Building2, Plus } from 'lucide-vue-next'
+import type { Company } from '../../components/companies/types'
+import CompaniesTable from '../../components/companies/CompaniesTable.vue'
+import CompaniesPagination from '../../components/companies/CompaniesPagination.vue'
+import CreateCompanyDialog from '../../components/companies/CreateCompanyDialog.vue'
 
-interface Company {
-  id: number
-  name: string
-  email: string
-  subscription: 'starter' | 'professional' | 'enterprise'
-  status: 'active' | 'inactive' | 'pending'
-  users: number
-  createdAt: string
-}
+const isCreateDialogOpen = ref(false)
 
 const companies = ref<Company[]>([
   { id: 1, name: 'Acme Corporation', email: 'contact@acme.com', subscription: 'enterprise', status: 'active', users: 45, createdAt: '2024-01-15' },
@@ -83,73 +48,37 @@ const companies = ref<Company[]>([
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
-const totalPages = computed(() => Math.ceil(companies.value.length / itemsPerPage.value))
-
 const paginatedCompanies = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return companies.value.slice(start, end)
 })
 
-const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
-const endIndex = computed(() => Math.min(currentPage.value * itemsPerPage.value, companies.value.length))
-
-function goToPage(page: number) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
+function handleCreateCompany(values: Record<string, unknown>) {
+  const newCompany: Company = {
+    id: companies.value.length + 1,
+    name: values.companyName as string,
+    email: values.companyEmail as string,
+    subscription: values.subscriptionTier as Company['subscription'],
+    status: 'pending',
+    users: 0,
+    createdAt: new Date().toISOString().split('T')[0],
   }
+  companies.value.unshift(newCompany)
 }
 
-function onItemsPerPageChange(value: unknown) {
-  if (value !== null && value !== undefined) {
-    itemsPerPage.value = Number(value)
-    currentPage.value = 1
-  }
+function handleViewCompany(company: Company) {
+  console.log('View company:', company)
 }
 
-// Generate visible page numbers
-const visiblePages = computed(() => {
-  const pages: (number | 'ellipsis')[] = []
-  const total = totalPages.value
-  const current = currentPage.value
-
-  if (total <= 5) {
-    for (let i = 1; i <= total; i++) pages.push(i)
-  } else {
-    pages.push(1)
-    if (current > 3) pages.push('ellipsis')
-
-    const start = Math.max(2, current - 1)
-    const end = Math.min(total - 1, current + 1)
-
-    for (let i = start; i <= end; i++) pages.push(i)
-
-    if (current < total - 2) pages.push('ellipsis')
-    pages.push(total)
-  }
-
-  return pages
-})
-
-function getSubscriptionVariant(subscription: Company['subscription']) {
-  switch (subscription) {
-    case 'enterprise':
-      return 'default'
-    case 'professional':
-      return 'secondary'
-    case 'starter':
-      return 'outline'
-  }
+function handleEditCompany(company: Company) {
+  console.log('Edit company:', company)
 }
 
-function getStatusVariant(status: Company['status']) {
-  switch (status) {
-    case 'active':
-      return 'default'
-    case 'inactive':
-      return 'destructive'
-    case 'pending':
-      return 'secondary'
+function handleDeleteCompany(company: Company) {
+  const index = companies.value.findIndex(c => c.id === company.id)
+  if (index !== -1) {
+    companies.value.splice(index, 1)
   }
 }
 </script>
@@ -161,7 +90,7 @@ function getStatusVariant(status: Company['status']) {
         <h2 class="text-3xl font-bold tracking-tight">Companies</h2>
         <p class="text-muted-foreground">Manage all registered companies</p>
       </div>
-      <Button>
+      <Button @click="isCreateDialogOpen = true">
         <Plus class="mr-2 h-4 w-4" />
         Add Company
       </Button>
@@ -178,133 +107,27 @@ function getStatusVariant(status: Company['status']) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Company</TableHead>
-              <TableHead>Subscription</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead class="text-right">Users</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead class="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-for="company in paginatedCompanies" :key="company.id">
-              <TableCell>
-                <div class="flex flex-col">
-                  <span class="font-medium">{{ company.name }}</span>
-                  <span class="text-sm text-muted-foreground">{{ company.email }}</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge :variant="getSubscriptionVariant(company.subscription)">
-                  {{ company.subscription }}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Badge :variant="getStatusVariant(company.status)">
-                  {{ company.status }}
-                </Badge>
-              </TableCell>
-              <TableCell class="text-right">{{ company.users }}</TableCell>
-              <TableCell>{{ company.createdAt }}</TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
-                    <Button variant="ghost" size="icon" class="h-8 w-8">
-                      <MoreHorizontal class="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>View details</DropdownMenuItem>
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuItem class="text-destructive">Delete</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+        <CompaniesTable
+          :companies="paginatedCompanies"
+          @view="handleViewCompany"
+          @edit="handleEditCompany"
+          @delete="handleDeleteCompany"
+        />
 
-        <!-- Pagination Controls -->
-        <div class="flex items-center justify-between border-t pt-4 mt-4">
-          <div class="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Showing {{ startIndex }} to {{ endIndex }} of {{ companies.length }} results</span>
-            <span class="mx-2">|</span>
-            <span>Rows per page:</span>
-            <Select :model-value="String(itemsPerPage)" @update:model-value="onItemsPerPageChange">
-              <SelectTrigger class="w-18 h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <nav class="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              class="h-8 w-8"
-              :disabled="currentPage === 1"
-              @click="goToPage(1)"
-            >
-              <ChevronsLeft class="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              class="h-8 w-8"
-              :disabled="currentPage === 1"
-              @click="goToPage(currentPage - 1)"
-            >
-              <ChevronLeft class="h-4 w-4" />
-            </Button>
-
-            <span
-              v-for="(page, index) in visiblePages"
-              :key="index"
-              :class="page === 'ellipsis' ? 'px-2 text-muted-foreground flex items-center' : ''"
-            >
-              <Ellipsis v-if="page === 'ellipsis'" class="h-4 w-4" />
-              <Button
-                v-else
-                variant="outline"
-                size="icon"
-                class="h-8 w-8"
-                :class="{ 'bg-primary text-primary-foreground hover:bg-primary/90': currentPage === page }"
-                @click="goToPage(page)"
-              >
-                {{ page }}
-              </Button>
-            </span>
-
-            <Button
-              variant="outline"
-              size="icon"
-              class="h-8 w-8"
-              :disabled="currentPage === totalPages"
-              @click="goToPage(currentPage + 1)"
-            >
-              <ChevronRight class="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              class="h-8 w-8"
-              :disabled="currentPage === totalPages"
-              @click="goToPage(totalPages)"
-            >
-              <ChevronsRight class="h-4 w-4" />
-            </Button>
-          </nav>
-        </div>
+        <CompaniesPagination
+          :current-page="currentPage"
+          :items-per-page="itemsPerPage"
+          :total-items="companies.length"
+          @update:current-page="currentPage = $event"
+          @update:items-per-page="itemsPerPage = $event"
+        />
       </CardContent>
     </Card>
+
+    <CreateCompanyDialog
+      :open="isCreateDialogOpen"
+      @update:open="isCreateDialogOpen = $event"
+      @submit="handleCreateCompany"
+    />
   </div>
 </template>
