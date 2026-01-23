@@ -16,7 +16,7 @@ const router = createRouter({
     {
       path: '/subscriptions',
       name: 'subscriptions',
-      component: () => import('../views/dashboard/DashboardView.vue'), // Placeholder
+      component: () => import('../views/subscriptions/SubscriptionsView.vue'),
       meta: { title: 'Subscriptions' },
     },
     {
@@ -34,7 +34,7 @@ const router = createRouter({
     {
       path: '/onboarding',
       name: 'onboarding',
-      component: () => import('../views/dashboard/DashboardView.vue'), // Placeholder
+      component: () => import('../views/onboarding/OnboardingView.vue'),
       meta: { title: 'Onboarding Requests' },
     },
     {

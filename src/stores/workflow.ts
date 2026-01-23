@@ -47,7 +47,7 @@ export const useWorkflowStore = defineStore('workflow', () => {
         {
           id: '1',
           type: 'state',
-          position: { x: 250, y: 0 },
+          position: { x: 100, y: 0 },
           data: { name: 'Application Submittion', stateType: 'initial', displayOrder: 1 },
         },
         {
@@ -59,7 +59,7 @@ export const useWorkflowStore = defineStore('workflow', () => {
         {
           id: '3',
           type: 'state',
-          position: { x: 250, y: 300 },
+          position: { x: 400, y: 400 },
           data: { name: 'Application Approval ', stateType: 'middle', displayOrder: 3 },
         }
       ],
