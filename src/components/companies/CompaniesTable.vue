@@ -24,7 +24,6 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: 'view', company: Company): void
-  (e: 'edit', company: Company): void
   (e: 'delete', company: Company): void
 }>()
 
@@ -91,8 +90,7 @@ function getStatusVariant(status: Company['status']) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem @click="emit('view', company)">View details</DropdownMenuItem>
-              <DropdownMenuItem @click="emit('edit', company)">Edit</DropdownMenuItem>
+              <DropdownMenuItem @click="emit('view', company)">View / Edit</DropdownMenuItem>
               <DropdownMenuItem class="text-destructive" @click="emit('delete', company)">Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

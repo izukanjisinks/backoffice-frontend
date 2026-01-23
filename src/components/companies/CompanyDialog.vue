@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { Check, Circle, Dot, Building2, CreditCard, UserPlus } from 'lucide-vue-next'
 import * as z from 'zod'
@@ -36,9 +36,11 @@ import {
   StepperTitle,
   StepperTrigger,
 } from '../ui/stepper'
+import type { Company, CompanyFormValues } from './types'
 
 const props = defineProps<{
   open: boolean
+  company?: Company | null
 }>()
 
 const emit = defineEmits<{
@@ -46,62 +48,76 @@ const emit = defineEmits<{
   (e: 'submit', values: CompanyFormValues): void
 }>()
 
-interface CompanyFormValues {
-  // Step 1: Company Details
-  companyName: string
-  companyEmail: string
-  phone: string
-  website: string
-  industry: string
-  companySize: string
-  // Step 2: Subscription & Billing
-  subscriptionTier: string
-  billingCycle: string
-  billingEmail: string
-  billingAddress: string
-  billingCity: string
-  billingCountry: string
-  // Step 3: Admin Account
-  adminFirstName: string
-  adminLastName: string
-  adminEmail: string
-  adminPhone: string
-  adminRole: string
-  sendWelcomeEmail: boolean
-}
+const isEditMode = computed(() => !!props.company)
 
-// Validation schemas for each step
-const formSchema = [
+const initialValues = computed<Partial<CompanyFormValues>>(() => {
+  if (!props.company) {
+    return { sendWelcomeEmail: true }
+  }
+  return {
+    companyName: props.company.name,
+    companyEmail: props.company.email,
+    phone: props.company.phone || '',
+    website: props.company.website || '',
+    industry: props.company.industry || '',
+    companySize: props.company.companySize || '',
+    subscriptionTier: props.company.subscription,
+    billingCycle: props.company.billingCycle || '',
+    billingEmail: props.company.billingEmail || '',
+    billingAddress: props.company.billingAddress || '',
+    billingCity: props.company.billingCity || '',
+    billingCountry: props.company.billingCountry || '',
+    adminFirstName: props.company.adminFirstName || '',
+    adminLastName: props.company.adminLastName || '',
+    adminEmail: props.company.adminEmail || '',
+    adminPhone: props.company.adminPhone || '',
+    adminRole: props.company.adminRole || '',
+    sendWelcomeEmail: props.company.sendWelcomeEmail ?? true,
+  }
+})
+
+// Combined schema for form initialization (all fields)
+const combinedSchema = z.object({
   // Step 1: Company Details
-  z.object({
-    companyName: z.string().min(2, 'Company name must be at least 2 characters'),
-    companyEmail: z.string().email('Invalid email address'),
-    phone: z.string().optional(),
-    website: z.string().url('Invalid URL').optional().or(z.literal('')),
-    industry: z.string().min(1, 'Please select an industry'),
-    companySize: z.string().min(1, 'Please select company size'),
-  }),
+  companyName: z.string().min(2, 'Company name must be at least 2 characters'),
+  companyEmail: z.string().email('Invalid email address'),
+  phone: z.string().optional(),
+  website: z.string().url('Invalid URL').optional().or(z.literal('')),
+  industry: z.string().min(1, 'Please select an industry'),
+  companySize: z.string().min(1, 'Please select company size'),
   // Step 2: Subscription & Billing
-  z.object({
-    subscriptionTier: z.string().min(1, 'Please select a subscription tier'),
-    billingCycle: z.string().min(1, 'Please select a billing cycle'),
-    billingEmail: z.string().email('Invalid email address'),
-    billingAddress: z.string().optional(),
-    billingCity: z.string().optional(),
-    billingCountry: z.string().optional(),
-  }),
+  subscriptionTier: z.string().min(1, 'Please select a subscription tier'),
+  billingCycle: z.string().min(1, 'Please select a billing cycle'),
+  billingEmail: z.string().email('Invalid email address'),
+  billingAddress: z.string().optional(),
+  billingCity: z.string().optional(),
+  billingCountry: z.string().optional(),
   // Step 3: Admin Account
-  z.object({
-    adminFirstName: z.string().min(2, 'First name must be at least 2 characters'),
-    adminLastName: z.string().min(2, 'Last name must be at least 2 characters'),
-    adminEmail: z.string().email('Invalid email address'),
-    adminPhone: z.string().optional(),
-    adminRole: z.string().optional(),
-    sendWelcomeEmail: z.boolean().default(true),
-  }),
+  adminFirstName: z.string().min(2, 'First name must be at least 2 characters'),
+  adminLastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  adminEmail: z.string().email('Invalid email address'),
+  adminPhone: z.string().optional(),
+  adminRole: z.string().optional(),
+  sendWelcomeEmail: z.boolean().default(true),
+})
+
+// Per-step field names for validation
+const stepFields = [
+  ['companyName', 'companyEmail', 'phone', 'website', 'industry', 'companySize'],
+  ['subscriptionTier', 'billingCycle', 'billingEmail', 'billingAddress', 'billingCity', 'billingCountry'],
+  ['adminFirstName', 'adminLastName', 'adminEmail', 'adminPhone', 'adminRole', 'sendWelcomeEmail'],
 ]
 
 const stepIndex = ref(1)
+const formKey = ref(0)
+
+// Reset form when dialog opens/closes or company changes
+watch(() => [props.open, props.company], () => {
+  if (props.open) {
+    stepIndex.value = 1
+    formKey.value++
+  }
+}, { immediate: true })
 
 const steps = [
   {
@@ -155,7 +171,7 @@ const billingCycles = [
   { value: 'annually', label: 'Annually (Save 20%)' },
 ]
 
-const currentSchema = computed(() => toTypedSchema(formSchema[stepIndex.value - 1]))
+const formValidationSchema = toTypedSchema(combinedSchema)
 
 function onSubmit(values: CompanyFormValues) {
   emit('submit', values)
@@ -175,17 +191,19 @@ function handleClose(value: boolean) {
   <Dialog :open="open" @update:open="handleClose">
     <DialogContent class="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>Create New Company</DialogTitle>
+        <DialogTitle>{{ isEditMode ? 'Edit Company' : 'Create New Company' }}</DialogTitle>
         <DialogDescription>
-          Set up a new company account in 3 easy steps.
+          {{ isEditMode ? 'Update company details across all sections.' : 'Set up a new company account in 3 easy steps.' }}
         </DialogDescription>
       </DialogHeader>
 
       <Form
+        :key="formKey"
         v-slot="{ meta, values, validate }"
         as=""
         keep-values
-        :validation-schema="currentSchema"
+        :validation-schema="formValidationSchema"
+        :initial-values="initialValues"
       >
         <Stepper
           v-slot="{ isNextDisabled, isPrevDisabled, nextStep, prevStep }"
@@ -292,7 +310,10 @@ function handleClose(value: boolean) {
                 <FormField v-slot="{ componentField }" name="industry">
                   <FormItem>
                     <FormLabel>Industry *</FormLabel>
-                    <Select v-bind="componentField">
+                    <Select
+                      :model-value="componentField.modelValue"
+                      @update:model-value="componentField['onUpdate:modelValue']"
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select industry" />
@@ -311,7 +332,10 @@ function handleClose(value: boolean) {
                 <FormField v-slot="{ componentField }" name="companySize">
                   <FormItem>
                     <FormLabel>Company Size *</FormLabel>
-                    <Select v-bind="componentField">
+                    <Select
+                      :model-value="componentField.modelValue"
+                      @update:model-value="componentField['onUpdate:modelValue']"
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select size" />
@@ -335,7 +359,10 @@ function handleClose(value: boolean) {
                 <FormField v-slot="{ componentField }" name="subscriptionTier">
                   <FormItem>
                     <FormLabel>Subscription Tier *</FormLabel>
-                    <Select v-bind="componentField">
+                    <Select
+                      :model-value="componentField.modelValue"
+                      @update:model-value="componentField['onUpdate:modelValue']"
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select tier" />
@@ -357,7 +384,10 @@ function handleClose(value: boolean) {
                 <FormField v-slot="{ componentField }" name="billingCycle">
                   <FormItem>
                     <FormLabel>Billing Cycle *</FormLabel>
-                    <Select v-bind="componentField">
+                    <Select
+                      :model-value="componentField.modelValue"
+                      @update:model-value="componentField['onUpdate:modelValue']"
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select cycle" />
@@ -504,7 +534,7 @@ function handleClose(value: boolean) {
                   Next
                 </Button>
                 <Button v-if="stepIndex === steps.length" type="submit">
-                  Create Company
+                  {{ isEditMode ? 'Save Changes' : 'Create Company' }}
                 </Button>
               </div>
             </div>
