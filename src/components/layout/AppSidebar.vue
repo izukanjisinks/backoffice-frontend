@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import sysLogo from '../../assets/images/sys-logo.png'
+
 import {
   Sidebar,
   SidebarContent,
@@ -33,13 +35,18 @@ import {
   Settings,
   User,
   ChevronsUpDown,
+  Moon,
+  Sun,
 } from 'lucide-vue-next'
+import { useUiStore } from '../../stores/ui.store'
 
 defineProps<{
   variant?: 'sidebar' | 'floating' | 'inset'
 }>()
 
 const route = useRoute()
+const router = useRouter()
+const uiStore = useUiStore()
 
 // Mock user data - replace with actual auth store later
 const currentUser = {
@@ -61,6 +68,15 @@ const navigationItems = computed(() => [
 function isActive(path: string): boolean {
   return route.path.startsWith(path)
 }
+
+function handleLogout() {
+  localStorage.removeItem('isAuthenticated')
+  router.push('/login')
+}
+
+function toggleDarkMode() {
+  uiStore.toggleTheme()
+}
 </script>
 
 <template>
@@ -71,9 +87,14 @@ function isActive(path: string): boolean {
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" as-child>
             <RouterLink to="/dashboard">
-              <div class="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+            <img
+                :src="sysLogo"
+                alt="Hexa-Prime"
+                class="h-12 w-auto opacity-60"
+              />
+              <!-- <div class="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                 <Building2 class="size-4" />
-              </div>
+              </div> -->
               <div class="grid flex-1 text-left text-sm leading-tight">
                 <span class="truncate font-semibold">Backoffice</span>
                 <span class="truncate text-xs text-muted-foreground">Admin Panel</span>
@@ -155,8 +176,13 @@ function isActive(path: string): boolean {
                 <Settings class="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </DropdownMenuItem>
+              <DropdownMenuItem @click="toggleDarkMode">
+                <Moon v-if="!uiStore.isDarkMode" class="mr-2 h-4 w-4" />
+                <Sun v-else class="mr-2 h-4 w-4" />
+                <span>{{ uiStore.isDarkMode ? 'Light Mode' : 'Dark Mode' }}</span>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem class="text-destructive focus:text-destructive">
+              <DropdownMenuItem class="text-destructive focus:text-destructive" @click="handleLogout">
                 <LogOut class="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
