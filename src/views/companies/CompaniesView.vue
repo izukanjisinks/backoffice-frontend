@@ -14,8 +14,10 @@ import CompaniesTable from '../../components/companies/CompaniesTable.vue'
 import CompaniesPagination from '../../components/companies/CompaniesPagination.vue'
 import CompanyDialog from '../../components/companies/CompanyDialog.vue'
 import { useCompaniesStore } from '../../stores/companies'
+import { useOnboardingStore } from '../../stores/onboarding'
 
 const companiesStore = useCompaniesStore()
+const onboardingStore = useOnboardingStore()
 
 // Dialog state
 const isDialogOpen = ref(false)
@@ -45,7 +47,7 @@ function handleDeleteCompany(company: Company) {
   companiesStore.deleteCompany(company.id)
 }
 
-function handleDialogSubmit(values: CompanyFormValues) {
+function handleDialogSubmit(values: CompanyFormValues, onboardingRequestId?: string) {
   if (selectedCompany.value) {
     // Update existing company
     companiesStore.updateCompany(selectedCompany.value.id, {
@@ -90,7 +92,16 @@ function handleDialogSubmit(values: CompanyFormValues) {
       adminRole: values.adminRole,
       sendWelcomeEmail: values.sendWelcomeEmail,
     })
+
+    // Delete the onboarding request if it was used to create this company
+    if (onboardingRequestId) {
+      onboardingStore.deleteRequest(onboardingRequestId)
+    }
   }
+
+  // Close the dialog
+  isDialogOpen.value = false
+  selectedCompany.value = null
 }
 </script>
 

@@ -36,6 +36,7 @@ import {
   StepperTitle,
   StepperTrigger,
 } from '../ui/stepper'
+import { useOnboardingStore } from '../../stores/onboarding'
 import type { Company, CompanyFormValues } from './types'
 
 const props = defineProps<{
@@ -45,35 +46,65 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
-  (e: 'submit', values: CompanyFormValues): void
+  (e: 'submit', values: CompanyFormValues, onboardingRequestId?: string): void
 }>()
+
+const onboardingStore = useOnboardingStore()
+const selectedOnboardingRequest = ref<string>('manual')
 
 const isEditMode = computed(() => !!props.company)
 
+const approvedOnboardingRequests = computed(() => onboardingStore.approvedRequests)
+
 const initialValues = computed<Partial<CompanyFormValues>>(() => {
-  if (!props.company) {
-    return { sendWelcomeEmail: true }
+  // If editing existing company
+  if (props.company) {
+    return {
+      companyName: props.company.name,
+      companyEmail: props.company.email,
+      phone: props.company.phone || '',
+      website: props.company.website || '',
+      industry: props.company.industry || '',
+      companySize: props.company.companySize || '',
+      subscriptionTier: props.company.subscription,
+      billingCycle: props.company.billingCycle || '',
+      billingEmail: props.company.billingEmail || '',
+      billingAddress: props.company.billingAddress || '',
+      billingCity: props.company.billingCity || '',
+      billingCountry: props.company.billingCountry || '',
+      adminFirstName: props.company.adminFirstName || '',
+      adminLastName: props.company.adminLastName || '',
+      adminEmail: props.company.adminEmail || '',
+      adminPhone: props.company.adminPhone || '',
+      adminRole: props.company.adminRole || '',
+      sendWelcomeEmail: props.company.sendWelcomeEmail ?? true,
+    }
   }
-  return {
-    companyName: props.company.name,
-    companyEmail: props.company.email,
-    phone: props.company.phone || '',
-    website: props.company.website || '',
-    industry: props.company.industry || '',
-    companySize: props.company.companySize || '',
-    subscriptionTier: props.company.subscription,
-    billingCycle: props.company.billingCycle || '',
-    billingEmail: props.company.billingEmail || '',
-    billingAddress: props.company.billingAddress || '',
-    billingCity: props.company.billingCity || '',
-    billingCountry: props.company.billingCountry || '',
-    adminFirstName: props.company.adminFirstName || '',
-    adminLastName: props.company.adminLastName || '',
-    adminEmail: props.company.adminEmail || '',
-    adminPhone: props.company.adminPhone || '',
-    adminRole: props.company.adminRole || '',
-    sendWelcomeEmail: props.company.sendWelcomeEmail ?? true,
+
+  // If onboarding request is selected, prefill from it
+  if (selectedOnboardingRequest.value && selectedOnboardingRequest.value !== 'manual') {
+    const request = onboardingStore.getRequestById(selectedOnboardingRequest.value)
+    if (request) {
+      return {
+        companyName: request.companyName,
+        companyEmail: request.email,
+        phone: request.phone || '',
+        website: request.website || '',
+        industry: request.industry || '',
+        companySize: request.companySize || '',
+        billingEmail: request.email, // Default billing email to company email
+        adminFirstName: request.contactPerson.split(' ')[0] || '',
+        adminLastName: request.contactPerson.split(' ').slice(1).join(' ') || '',
+        adminEmail: request.contactEmail || request.email,
+        adminPhone: request.contactPhone || request.phone || '',
+        adminRole: request.contactRole || '',
+        sendWelcomeEmail: true,
+      }
+    }
   }
+
+  // Default empty form
+  return { sendWelcomeEmail: true }
 })
 
 // Combined schema for form initialization (all fields)
@@ -116,8 +147,17 @@ watch(() => [props.open, props.company], () => {
   if (props.open) {
     stepIndex.value = 1
     formKey.value++
+    // Reset selected onboarding request when opening dialog
+    if (!props.company) {
+      selectedOnboardingRequest.value = 'manual'
+    }
   }
 }, { immediate: true })
+
+// Watch for onboarding request selection to trigger form reset with new values
+watch(selectedOnboardingRequest, () => {
+  formKey.value++
+})
 
 const steps = [
   {
@@ -174,9 +214,11 @@ const billingCycles = [
 const formValidationSchema = toTypedSchema(combinedSchema)
 
 function onSubmit(values: CompanyFormValues) {
-  emit('submit', values)
+  const requestId = selectedOnboardingRequest.value === 'manual' ? undefined : selectedOnboardingRequest.value
+  emit('submit', values, requestId)
   emit('update:open', false)
   stepIndex.value = 1
+  selectedOnboardingRequest.value = 'manual'
 }
 
 function handleClose(value: boolean) {
@@ -211,6 +253,36 @@ function handleFormSubmit(meta: { valid: boolean }, values: unknown) {
           {{ isEditMode ? 'Update company details across all sections.' : 'Set up a new company account in 3 easy steps.' }}
         </DialogDescription>
       </DialogHeader>
+
+      <!-- Onboarding Request Selection (only in create mode) -->
+      <div v-if="!isEditMode && approvedOnboardingRequests.length > 0" class="space-y-3 pb-4 border-b">
+        <div class="space-y-2">
+          <label class="text-sm font-medium">Onboarding Request (Optional)</label>
+          <Select
+            :model-value="selectedOnboardingRequest"
+            @update:model-value="selectedOnboardingRequest = $event"
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select an approved request or create manually" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="manual">
+                <span class="text-muted-foreground">Create manually (empty form)</span>
+              </SelectItem>
+              <SelectItem
+                v-for="request in approvedOnboardingRequests"
+                :key="request.id"
+                :value="request.id"
+              >
+                {{ request.companyName }} - {{ request.contactPerson }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p class="text-xs text-muted-foreground">
+            Select an approved onboarding request to pre-fill company details
+          </p>
+        </div>
+      </div>
 
       <Form
         :key="formKey"

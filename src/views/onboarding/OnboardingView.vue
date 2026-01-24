@@ -80,7 +80,10 @@ function handleViewRequest(request: OnboardingRequest) {
 
 function handleDialogClose() {
   isRequestDialogOpen.value = false
-  selectedRequest.value = null
+  // Delay clearing the selected request to allow dialog close animation to complete
+  setTimeout(() => {
+    selectedRequest.value = null
+  }, 200)
 }
 </script>
 

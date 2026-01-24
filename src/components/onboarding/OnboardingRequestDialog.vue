@@ -144,16 +144,8 @@ function getStatusColor(status: string) {
 
             <div class="space-y-2">
               <Label class="text-xs text-muted-foreground flex items-center gap-2">
-                <User class="h-3 w-3" />
-                Contact Person
-              </Label>
-              <p class="text-sm font-medium">{{ request.contactPerson }}</p>
-            </div>
-
-            <div class="space-y-2">
-              <Label class="text-xs text-muted-foreground flex items-center gap-2">
                 <Mail class="h-3 w-3" />
-                Email
+                Company Email
               </Label>
               <p class="text-sm">{{ request.email }}</p>
             </div>
@@ -166,7 +158,7 @@ function getStatusColor(status: string) {
               <p class="text-sm">{{ request.phone }}</p>
             </div>
 
-            <div v-if="request.website" class="space-y-2 col-span-2">
+            <div v-if="request.website" class="space-y-2">
               <Label class="text-xs text-muted-foreground flex items-center gap-2">
                 <Globe class="h-3 w-3" />
                 Website
@@ -174,6 +166,54 @@ function getStatusColor(status: string) {
               <a :href="request.website" target="_blank" class="text-sm text-primary hover:underline">
                 {{ request.website }}
               </a>
+            </div>
+
+            <div v-if="request.industry" class="space-y-2">
+              <Label class="text-xs text-muted-foreground">Industry</Label>
+              <p class="text-sm">{{ request.industry }}</p>
+            </div>
+
+            <div v-if="request.companySize" class="space-y-2">
+              <Label class="text-xs text-muted-foreground">Company Size</Label>
+              <p class="text-sm">{{ request.companySize }}</p>
+            </div>
+          </div>
+        </div>
+
+        <Separator />
+
+        <!-- Contact Person Information -->
+        <div class="space-y-4">
+          <h4 class="text-sm font-semibold">Contact Person</h4>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label class="text-xs text-muted-foreground flex items-center gap-2">
+                <User class="h-3 w-3" />
+                Name
+              </Label>
+              <p class="text-sm font-medium">{{ request.contactPerson }}</p>
+            </div>
+
+            <div v-if="request.contactEmail" class="space-y-2">
+              <Label class="text-xs text-muted-foreground flex items-center gap-2">
+                <Mail class="h-3 w-3" />
+                Email
+              </Label>
+              <p class="text-sm">{{ request.contactEmail }}</p>
+            </div>
+
+            <div v-if="request.contactPhone" class="space-y-2">
+              <Label class="text-xs text-muted-foreground flex items-center gap-2">
+                <Phone class="h-3 w-3" />
+                Phone
+              </Label>
+              <p class="text-sm">{{ request.contactPhone }}</p>
+            </div>
+
+            <div v-if="request.contactRole" class="space-y-2">
+              <Label class="text-xs text-muted-foreground">Role</Label>
+              <p class="text-sm">{{ request.contactRole }}</p>
             </div>
           </div>
         </div>

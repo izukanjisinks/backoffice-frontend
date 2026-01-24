@@ -5,11 +5,19 @@ export type OnboardingStatus = 'pending' | 'reviewing' | 'approved' | 'rejected'
 
 export interface OnboardingRequest {
   id: string
+  // Company Details
   companyName: string
-  contactPerson: string
   email: string
   phone: string
   website?: string
+  industry?: string
+  companySize?: string
+  // Contact Person (maps to admin)
+  contactPerson: string
+  contactEmail?: string
+  contactPhone?: string
+  contactRole?: string
+  // Onboarding status tracking
   status: OnboardingStatus
   workflowState?: string
   workflowStateId?: string
@@ -24,10 +32,15 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     {
       id: '1',
       companyName: 'Acme Corporation',
-      contactPerson: 'John Smith',
-      email: 'john.smith@acme.com',
+      email: 'contact@acme.com',
       phone: '+1 (555) 123-4567',
       website: 'https://acme.com',
+      industry: 'Technology',
+      companySize: '201-500',
+      contactPerson: 'John Smith',
+      contactEmail: 'john.smith@acme.com',
+      contactPhone: '+1 (555) 123-4568',
+      contactRole: 'CEO',
       status: 'approved',
       workflowState: 'Application Review',
       workflowStateId: '2',
@@ -39,10 +52,15 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     {
       id: '2',
       companyName: 'TechStart Inc.',
-      contactPerson: 'Sarah Johnson',
-      email: 'sarah@techstart.io',
+      email: 'hello@techstart.io',
       phone: '+1 (555) 234-5678',
       website: 'https://techstart.io',
+      industry: 'Technology',
+      companySize: '11-50',
+      contactPerson: 'Sarah Johnson',
+      contactEmail: 'sarah@techstart.io',
+      contactPhone: '+1 (555) 234-5679',
+      contactRole: 'CTO',
       status: 'reviewing',
       assignedTo: 'Manager User',
       submittedAt: '2024-01-21T10:15:00Z',
@@ -51,21 +69,32 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     {
       id: '3',
       companyName: 'Global Solutions Ltd',
-      contactPerson: 'Michael Chen',
-      email: 'michael.chen@globalsolutions.com',
+      email: 'info@globalsolutions.com',
       phone: '+1 (555) 345-6789',
+      website: '',
+      industry: 'Consulting',
+      companySize: '500+',
+      contactPerson: 'Michael Chen',
+      contactEmail: 'michael.chen@globalsolutions.com',
+      contactPhone: '+1 (555) 345-6790',
+      contactRole: 'Business Development Manager',
       status: 'pending',
       submittedAt: '2024-01-22T08:30:00Z',
     },
     {
       id: '4',
       companyName: 'Innovation Labs',
-      contactPerson: 'Emily Rodriguez',
-      email: 'emily@innovationlabs.net',
+      email: 'info@innovationlabs.net',
       phone: '+1 (555) 456-7890',
       website: 'https://innovationlabs.net',
+      industry: 'Technology',
+      companySize: '51-200',
+      contactPerson: 'Emily Rodriguez',
+      contactEmail: 'emily@innovationlabs.net',
+      contactPhone: '+1 (555) 456-7891',
+      contactRole: 'Founder',
       status: 'approved',
-      workflowState: 'Application Approval ',
+      workflowState: 'Application Approval',
       workflowStateId: '3',
       assignedTo: 'Manager User',
       submittedAt: '2024-01-18T11:00:00Z',
@@ -75,9 +104,15 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     {
       id: '5',
       companyName: 'Metro Enterprises',
-      contactPerson: 'David Kim',
-      email: 'david.kim@metro-ent.com',
+      email: 'contact@metro-ent.com',
       phone: '+1 (555) 567-8901',
+      website: '',
+      industry: 'Manufacturing',
+      companySize: '201-500',
+      contactPerson: 'David Kim',
+      contactEmail: 'david.kim@metro-ent.com',
+      contactPhone: '+1 (555) 567-8902',
+      contactRole: 'Operations Director',
       status: 'rejected',
       assignedTo: 'Admin User',
       submittedAt: '2024-01-19T13:20:00Z',
@@ -87,10 +122,15 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     {
       id: '6',
       companyName: 'CloudFirst Systems',
-      contactPerson: 'Lisa Anderson',
-      email: 'lisa@cloudfirst.io',
+      email: 'admin@cloudfirst.io',
       phone: '+1 (555) 678-9012',
       website: 'https://cloudfirst.io',
+      industry: 'Technology',
+      companySize: '11-50',
+      contactPerson: 'Lisa Anderson',
+      contactEmail: 'lisa@cloudfirst.io',
+      contactPhone: '+1 (555) 678-9013',
+      contactRole: 'VP Sales',
       status: 'pending',
       submittedAt: '2024-01-22T14:45:00Z',
     },
@@ -155,6 +195,15 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     }
   }
 
+  function deleteRequest(id: string) {
+    const index = requests.value.findIndex(r => r.id === id)
+    if (index !== -1) {
+      requests.value.splice(index, 1)
+      return true
+    }
+    return false
+  }
+
   return {
     requests,
     pendingRequests,
@@ -166,5 +215,6 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     updateWorkflowState,
     assignRequest,
     addNotes,
+    deleteRequest,
   }
 })
